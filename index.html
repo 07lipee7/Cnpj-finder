@@ -17,6 +17,7 @@
       --primary: #2563eb;
       --primary-hover: #1d4ed8;
       --danger: #ef4444;
+      --danger-hover: #dc2626;
       --border: #e2e8f0;
       --badge-bg: #eff6ff;
       --badge-text: #1d4ed8;
@@ -216,7 +217,7 @@
 
     .filter-form {
       display: grid;
-      grid-template-columns: 1.5fr 1fr 1fr auto;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) auto;
       gap: 12px;
       align-items: end;
     }
@@ -245,6 +246,7 @@
     .btn-group {
       display: flex;
       gap: 8px;
+      flex-wrap: wrap;
     }
 
     .btn {
@@ -255,6 +257,7 @@
       border-radius: 8px;
       cursor: pointer;
       transition: background 0.2s;
+      white-space: nowrap;
     }
 
     .btn-primary {
@@ -274,6 +277,16 @@
 
     .btn-secondary:hover {
       background-color: #f1f5f9;
+    }
+
+    .btn-danger-outline {
+      background-color: #fff;
+      color: var(--danger);
+      border: 1px solid var(--danger);
+    }
+
+    .btn-danger-outline:hover {
+      background-color: #fef2f2;
     }
 
     .btn-logout {
@@ -401,7 +414,7 @@
   <main>
     <header>
       <h1 id="header-titulo">Extrator e Pesquisa de Empresas</h1>
-      <p id="header-subtitulo">Puxe novas empresas livres por ramo de atividade e estado.</p>
+      <p id="header-subtitulo">Puxe novas empresas livres por ramo de atividade, estado e quantidade.</p>
     </header>
 
     <div class="metrics-grid">
@@ -415,7 +428,7 @@
       </div>
     </div>
 
-    <!-- Filtros para Puxar Novos Lotes (300 por vez) -->
+    <!-- Painel de Filtros para Puxar com Seletor de Quantidade -->
     <div class="filter-panel" id="panel-filtros-puxar">
       <div class="filter-form">
         <div class="form-group">
@@ -445,25 +458,36 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="filter-termo">Nome ou CNPJ (Opcional)</label>
-          <input type="text" id="filter-termo" placeholder="Digite termo de busca..." />
+          <label for="filter-quantidade">Quantidade</label>
+          <select id="filter-quantidade">
+            <option value="10">10 empresas</option>
+            <option value="50">50 empresas</option>
+            <option value="100" selected>100 empresas</option>
+            <option value="200">200 empresas</option>
+            <option value="300">300 empresas</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="filter-termo">Nome / CNPJ (Opcional)</label>
+          <input type="text" id="filter-termo" placeholder="Digite busca..." />
         </div>
         <div class="btn-group">
-          <button class="btn btn-primary" onclick="puxarNovasEmpresas()">Puxar Lote (300)</button>
+          <button class="btn btn-primary" onclick="puxarNovasEmpresas()">Puxar Lote</button>
           <button class="btn btn-secondary" onclick="exportarCSV()">Exportar CSV</button>
         </div>
       </div>
     </div>
 
-    <!-- Filtros do Histórico -->
+    <!-- Painel de Filtros do Histórico com Botão de Liberar -->
     <div class="filter-panel" id="panel-filtros-historico" style="display: none;">
       <div class="filter-form">
-        <div class="form-group" style="grid-column: span 3;">
-          <label for="filter-historico-busca">Buscar no Seu Histórico (Nome, Ramo ou CNPJ)</label>
-          <input type="text" id="filter-historico-busca" placeholder="Digite para filtrar seu histórico..." oninput="filtrarHistoricoLocal()" />
+        <div class="form-group" style="grid-column: span 2;">
+          <label for="filter-historico-busca">Buscar no Seu Histórico</label>
+          <input type="text" id="filter-historico-busca" placeholder="Filtrar por nome, ramo ou CNPJ..." oninput="filtrarHistoricoLocal()" />
         </div>
         <div class="btn-group">
           <button class="btn btn-secondary" onclick="exportarCSV()">Exportar CSV</button>
+          <button class="btn btn-danger-outline" onclick="liberarHistorico()">Liberar Meu Histórico</button>
         </div>
       </div>
     </div>
@@ -574,7 +598,7 @@
         panelPuxar.style.display = "block";
         panelHistorico.style.display = "none";
         headerTitulo.textContent = "Extrator e Pesquisa de Empresas";
-        headerSubtitulo.textContent = "Puxe novas empresas livres por ramo de atividade e estado.";
+        headerSubtitulo.textContent = "Puxe novas empresas livres por ramo de atividade, estado e quantidade.";
         tableTitulo.textContent = "Empresas Reservadas no Lote Atual";
         dadosExibidos = [];
         renderizarTabela([]);
@@ -590,10 +614,11 @@
       }
     }
 
-    // Puxa e reserva até 300 empresas livres de forma exclusiva
+    // Puxa novas empresas respeitando a quantidade selecionada (10 a 300)
     async function puxarNovasEmpresas() {
       const tbody = document.getElementById("table-body");
-      tbody.innerHTML = `<tr><td colspan="6" class="status-msg">Buscando e reservando até 300 empresas livres...</td></tr>`;
+      const qtd = parseInt(document.getElementById("filter-quantidade").value, 10) || 100;
+      tbody.innerHTML = `<tr><td colspan="6" class="status-msg">Buscando e reservando até ${qtd} empresas livres...</td></tr>`;
 
       const categoria = document.getElementById("filter-categoria").value || null;
       const uf = document.getElementById("filter-uf").value || null;
@@ -604,7 +629,7 @@
           p_categoria: categoria,
           p_uf: uf,
           p_termo: termo,
-          p_limite: 300
+          p_limite: qtd
         });
 
         if (error) throw error;
@@ -617,7 +642,7 @@
       }
     }
 
-    // Carrega o histórico de todas as empresas do usuário logado
+    // Carrega o histórico completo do usuário
     async function carregarHistoricoDoUsuario() {
       if (!usuarioAtualId) return;
 
@@ -639,6 +664,26 @@
       } catch (err) {
         console.error("Erro no histórico:", err);
         tbody.innerHTML = `<tr><td colspan="6" class="status-msg" style="color: #ef4444;">Erro ao carregar histórico: ${err.message}</td></tr>`;
+      }
+    }
+
+    // Libera as empresas do histórico de volta para a base
+    async function liberarHistorico() {
+      if (!usuarioAtualId) return;
+      if (!confirm("Tem certeza que deseja devolver todas as suas empresas para a base livre?")) return;
+
+      try {
+        const { error } = await dbClient
+          .from("empresas")
+          .update({ usuario_id: null })
+          .eq("usuario_id", usuarioAtualId);
+
+        if (error) throw error;
+
+        alert("Todas as suas empresas foram liberadas e estão disponíveis novamente!");
+        carregarHistoricoDoUsuario();
+      } catch (err) {
+        alert("Erro ao liberar histórico: " + err.message);
       }
     }
 
@@ -665,7 +710,7 @@
 
       if (lista.length === 0) {
         const msgVazia = abaAtual === "historico" 
-          ? "Você ainda não possui empresas no seu histórico."
+          ? "Você não possui nenhuma empresa reservada no momento."
           : "Nenhuma empresa livre encontrada para os filtros selecionados.";
         tbody.innerHTML = `<tr><td colspan="6" class="status-msg">${msgVazia}</td></tr>`;
         return;
