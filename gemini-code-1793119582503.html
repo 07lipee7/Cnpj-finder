@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CNPJ Finder — Extrator de Empresas</title>
+  <!-- Supabase JS Client via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg-sidebar: #0f172a;
+      --bg-sidebar-hover: #1e293b;
+      --bg-main: #f8fafc;
+      --bg-card: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --text-white: #f8fafc;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --border: #e2e8f0;
+      --badge-bg: #eff6ff;
+      --badge-text: #1d4ed8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      display: flex;
+      min-height: 100vh;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+    }
+
+    /* Menu Lateral */
+    aside {
+      width: 250px;
+      background-color: var(--bg-sidebar);
+      color: var(--text-white);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      padding: 24px 20px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      border-bottom: 1px solid var(--bg-sidebar-hover);
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 16px 8px;
+    }
+
+    .nav-item {
+      padding: 12px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #94a3b8;
+      font-weight: 500;
+      margin-bottom: 4px;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .nav-item:hover, .nav-item.active {
+      background-color: var(--bg-sidebar-hover);
+      color: var(--text-white);
+    }
+
+    /* Conteúdo Principal */
+    main {
+      flex: 1;
+      padding: 32px;
+      overflow-y: auto;
+    }
+
+    header {
+      margin-bottom: 24px;
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+
+    header p {
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-size: 0.95rem;
+    }
+
+    /* Cartões de Métricas */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .card-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    .card-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+
+    /* Barra de Filtros e Busca */
+    .filter-panel {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .filter-form {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .form-group input, .form-group select {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      background-color: #fff;
+    }
+
+    .form-group input:focus, .form-group select:focus {
+      border-color: var(--primary);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 10px 16px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background-color: #fff;
+      color: var(--text-main);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background-color: #f1f5f9;
+    }
+
+    /* Tabela */
+    .table-panel {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .table-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .table-title {
+      font-weight: 600;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 14px 20px;
+      font-size: 0.9rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background-color: #f8fafc;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background-color: var(--badge-bg);
+      color: var(--badge-text);
+    }
+
+    .status-msg {
+      padding: 32px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 860px) {
+      body {
+        flex-direction: column;
+      }
+      aside {
+        width: 100%;
+      }
+      .filter-form {
+        grid-template-columns: 1fr;
+      }
+      .btn-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Menu Lateral -->
+  <aside>
+    <div class="brand">CNPJ Finder</div>
+    <ul class="nav-list">
+      <li class="nav-item active">Buscar Empresas</li>
+    </ul>
+  </aside>
+
+  <!-- Painel Principal -->
+  <main>
+    <header>
+      <h1>Extrator e Pesquisa de Empresas</h1>
+      <p>Consulte registros cadastrados por nome, categoria, estado e cidade.</p>
+    </header>
+
+    <!-- Métricas -->
+    <div class="metrics-grid">
+      <div class="card">
+        <div class="card-title">Resultados Encontrados</div>
+        <div class="card-value" id="metric-total">0</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Status da Conexão</div>
+        <div class="card-value" id="metric-status" style="font-size: 1.2rem; color: #f59e0b;">Aguardando...</div>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filter-panel">
+      <div class="filter-form">
+        <div class="form-group">
+          <label for="filter-term">Termo ou Categoria</label>
+          <input type="text" id="filter-term" placeholder="Ex: pet shop, barbearia, auto peças..." />
+        </div>
+        <div class="form-group">
+          <label for="filter-uf">Estado (UF)</label>
+          <select id="filter-uf">
+            <option value="">Todos</option>
+            <option value="SP">SP</option>
+            <option value="RJ">RJ</option>
+            <option value="MG">MG</option>
+            <option value="PR">PR</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="filter-cidade">Cidade</label>
+          <input type="text" id="filter-cidade" placeholder="Ex: Santo André" />
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="aplicarFiltros()">Filtrar</button>
+          <button class="btn btn-secondary" onclick="exportarCSV()">Exportar CSV</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela de Resultados -->
+    <div class="table-panel">
+      <div class="table-header">
+        <div class="table-title">Empresas Cadastradas</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Nome Empresarial</th>
+            <th>CNPJ</th>
+            <th>Telefone</th>
+            <th>Cidade</th>
+            <th>UF</th>
+            <th>Categoria</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr>
+            <td colspan="6" class="status-msg">Carregando dados do Supabase...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    // ==========================================
+    // CONFIGURAÇÃO DO BANCO (SUPABASE)
+    // ==========================================
+    const SUPABASE_URL = "COLE_SUA_PROJECT_URL_AQUI";
+    const SUPABASE_KEY = "COLE_SUA_CHAVE_PUBLICA_AQUI";
+
+    let dbClient = null;
+    let todasAsEmpresas = [];
+
+    // Inicializa a conexão
+    if (SUPABASE_URL !== "COLE_SUA_PROJECT_URL_AQUI" && SUPABASE_KEY !== "COLE_SUA_CHAVE_PUBLICA_AQUI") {
+      dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+
+    async function carregarEmpresas() {
+      const statusEl = document.getElementById("metric-status");
+      const tbody = document.getElementById("table-body");
+
+      if (!dbClient) {
+        statusEl.textContent = "Chaves ausentes";
+        statusEl.style.color = "#ef4444";
+        tbody.innerHTML = `<tr><td colspan="6" class="status-msg" style="color: #ef4444;">Insira sua SUPABASE_URL e SUPABASE_KEY no arquivo index.html para conectar.</td></tr>`;
+        return;
+      }
+
+      statusEl.textContent = "Conectando...";
+      statusEl.style.color = "#f59e0b";
+
+      try {
+        const { data, error } = await dbClient
+          .from("empresas")
+          .select("cnpj, nome, telefone, cidade, uf, categoria");
+
+        if (error) {
+          throw error;
+        }
+
+        todasAsEmpresas = data || [];
+        statusEl.textContent = "Conectado";
+        statusEl.style.color = "#10b981";
+
+        renderizarTabela(todasAsEmpresas);
+      } catch (err) {
+        console.error("Erro na consulta:", err);
+        statusEl.textContent = "Erro na consulta";
+        statusEl.style.color = "#ef4444";
+        tbody.innerHTML = `<tr><td colspan="6" class="status-msg" style="color: #ef4444;">Erro ao carregar dados: ${err.message}. Verifique a política RLS (Passo 1).</td></tr>`;
+      }
+    }
+
+    function renderizarTabela(lista) {
+      const tbody = document.getElementById("table-body");
+      const totalEl = document.getElementById("metric-total");
+
+      totalEl.textContent = lista.length;
+
+      if (lista.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="status-msg">Nenhuma empresa encontrada com os filtros informados.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = lista.map(emp => `
+        <tr>
+          <td><strong>${emp.nome || "-"}</strong></td>
+          <td>${emp.cnpj || "-"}</td>
+          <td>${emp.telefone || "-"}</td>
+          <td>${emp.cidade || "-"}</td>
+          <td>${emp.uf || "-"}</td>
+          <td><span class="badge">${emp.categoria || "Geral"}</span></td>
+        </tr>
+      `).join("");
+    }
+
+    function normalizar(texto) {
+      return (texto || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, "");
+    }
+
+    function aplicarFiltros() {
+      const termo = normalizar(document.getElementById("filter-term").value);
+      const uf = document.getElementById("filter-uf").value.trim().toUpperCase();
+      const cidade = normalizar(document.getElementById("filter-cidade").value);
+
+      const filtrados = todasAsEmpresas.filter(emp => {
+        const matchTermo = !termo ||
+          normalizar(emp.nome).includes(termo) ||
+          normalizar(emp.categoria).includes(termo);
+
+        const matchUf = !uf || (emp.uf || "").toUpperCase() === uf;
+        const matchCidade = !cidade || normalizar(emp.cidade).includes(cidade);
+
+        return matchTermo && matchUf && matchCidade;
+      });
+
+      renderizarTabela(filtrados);
+    }
+
+    function exportarCSV() {
+      if (todasAsEmpresas.length === 0) {
+        alert("Não há dados carregados para exportar.");
+        return;
+      }
+
+      const cabecalho = ["Nome", "CNPJ", "Telefone", "Cidade", "UF", "Categoria"];
+      const linhas = todasAsEmpresas.map(emp => [
+        `"${emp.nome || ""}"`,
+        `"${emp.cnpj || ""}"`,
+        `"${emp.telefone || ""}"`,
+        `"${emp.cidade || ""}"`,
+        `"${emp.uf || ""}"`,
+        `"${emp.categoria || ""}"`
+      ]);
+
+      const conteudo = [cabecalho.join(";"), ...linhas.map(l => l.join(";"))].join("\n");
+      const blob = new Blob(["\uFEFF" + conteudo], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "empresas.csv";
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Dispara a busca ao carregar a página
+    window.addEventListener("DOMContentLoaded", carregarEmpresas);
+  </script>
+</body>
+</html>
