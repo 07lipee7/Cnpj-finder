@@ -379,7 +379,7 @@
   <div id="auth-container">
     <div class="auth-card">
       <div class="auth-title">CNPJ Finder</div>
-      <div class="auth-subtitle">Inicie sessão para acessar o sistema</div>
+      <div class="auth-subtitle">Inicie sessão para aceder ao sistema</div>
 
       <div class="auth-input-group">
         <label for="login-email">E-mail</label>
@@ -387,7 +387,7 @@
       </div>
 
       <div class="auth-input-group">
-        <label for="login-password">Senha</label>
+        <label for="login-password">Palavra-passe</label>
         <input type="password" id="login-password" placeholder="••••••••" />
       </div>
 
@@ -442,7 +442,8 @@
             <option value="Mercado">Mercado</option>
             <option value="Restaurante">Restaurante</option>
             <option value="Farmácia">Farmácia</option>
-            <option value="Utilidades domésticas">Utilidades domésticas</option>
+            <option value="Construção Civil">Construção Civil</option>
+            <option value="Outros">Outros / Sem ramo específico</option>
           </select>
         </div>
         <div class="form-group">
@@ -614,11 +615,10 @@
       }
     }
 
-    // Puxa novas empresas respeitando a quantidade selecionada (10 a 300)
     async function puxarNovasEmpresas() {
       const tbody = document.getElementById("table-body");
       const qtd = parseInt(document.getElementById("filter-quantidade").value, 10) || 100;
-      tbody.innerHTML = `<tr><td colspan="6" class="status-msg">Buscando e reservando até ${qtd} empresas livres...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" class="status-msg">A puxar e reservar até ${qtd} empresas livres...</td></tr>`;
 
       const categoria = document.getElementById("filter-categoria").value || null;
       const uf = document.getElementById("filter-uf").value || null;
@@ -642,12 +642,11 @@
       }
     }
 
-    // Carrega o histórico completo do usuário
     async function carregarHistoricoDoUsuario() {
       if (!usuarioAtualId) return;
 
       const tbody = document.getElementById("table-body");
-      tbody.innerHTML = `<tr><td colspan="6" class="status-msg">Carregando seu histórico de empresas...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" class="status-msg">A carregar seu histórico de empresas...</td></tr>`;
 
       try {
         const { data, error } = await dbClient
@@ -667,10 +666,9 @@
       }
     }
 
-    // Libera as empresas do histórico de volta para a base
     async function liberarHistorico() {
       if (!usuarioAtualId) return;
-      if (!confirm("Tem certeza que deseja devolver todas as suas empresas para a base livre?")) return;
+      if (!confirm("Tem a certeza de que deseja devolver todas as suas empresas para a base livre?")) return;
 
       try {
         const { error } = await dbClient
@@ -710,7 +708,7 @@
 
       if (lista.length === 0) {
         const msgVazia = abaAtual === "historico" 
-          ? "Você não possui nenhuma empresa reservada no momento."
+          ? "Não possui nenhuma empresa reservada no momento."
           : "Nenhuma empresa livre encontrada para os filtros selecionados.";
         tbody.innerHTML = `<tr><td colspan="6" class="status-msg">${msgVazia}</td></tr>`;
         return;
