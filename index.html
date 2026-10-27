@@ -1,622 +1,428 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CNPJ Finder — Extrator de Empresas</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    :root {
-      --bg-sidebar: #0f172a;
-      --bg-sidebar-hover: #1e293b;
-      --bg-main: #f8fafc;
-      --bg-card: #ffffff;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --text-white: #f8fafc;
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --danger: #ef4444;
-      --border: #e2e8f0;
-      --badge-bg: #eff6ff;
-      --badge-text: #1d4ed8;
-    }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
+body {
+  min-height: 100vh;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  display: flex;
+}
 
-    body {
-      min-height: 100vh;
-      background-color: var(--bg-main);
-      color: var(--text-main);
-      display: flex;
-    }
+#auth-container {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 16px;
+}
 
-    #auth-container {
-      position: fixed;
-      inset: 0;
-      background-color: rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(4px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 999;
-      padding: 16px;
-    }
+.auth-card {
+  background: #ffffff;
+  width: 100%;
+  max-width: 400px;
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
-    .auth-card {
-      background: #ffffff;
-      width: 100%;
-      max-width: 400px;
-      padding: 32px;
-      border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
+.auth-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--text-main);
+}
 
-    .auth-title {
-      font-size: 1.4rem;
-      font-weight: 700;
-      text-align: center;
-      color: var(--text-main);
-    }
+.auth-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 8px;
+}
 
-    .auth-subtitle {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      text-align: center;
-      margin-bottom: 8px;
-    }
+.auth-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
-    .auth-input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
+.auth-input-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
 
-    .auth-input-group label {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--text-muted);
-    }
+.auth-input-group input {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+}
 
-    .auth-input-group input {
-      padding: 10px 14px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 0.95rem;
-      outline: none;
-    }
+.auth-input-group input:focus {
+  border-color: var(--primary);
+}
 
-    .auth-input-group input:focus {
-      border-color: var(--primary);
-    }
+.auth-error {
+  font-size: 0.85rem;
+  color: var(--danger);
+  display: none;
+  text-align: center;
+}
 
-    .auth-error {
-      font-size: 0.85rem;
-      color: var(--danger);
-      display: none;
-      text-align: center;
-    }
+aside {
+  width: 250px;
+  background-color: var(--bg-sidebar);
+  color: var(--text-white);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  justify-content: space-between;
+}
 
-    aside {
-      width: 250px;
-      background-color: var(--bg-sidebar);
-      color: var(--text-white);
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-      justify-content: space-between;
-    }
+.brand {
+  padding: 24px 20px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  border-bottom: 1px solid var(--bg-sidebar-hover);
+}
 
-    .brand {
-      padding: 24px 20px;
-      font-size: 1.2rem;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      border-bottom: 1px solid var(--bg-sidebar-hover);
-    }
+.nav-list {
+  list-style: none;
+  padding: 16px 8px;
+}
 
-    .nav-list {
-      list-style: none;
-      padding: 16px 8px;
-    }
+.nav-item {
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #94a3b8;
+  font-weight: 500;
+  margin-bottom: 4px;
+  transition: background 0.2s, color 0.2s;
+}
 
-    .nav-item {
-      padding: 12px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      color: #94a3b8;
-      font-weight: 500;
-      margin-bottom: 4px;
-      transition: background 0.2s, color 0.2s;
-    }
+.nav-item:hover, .nav-item.active {
+  background-color: var(--bg-sidebar-hover);
+  color: var(--text-white);
+}
 
-    .nav-item:hover, .nav-item.active {
-      background-color: var(--bg-sidebar-hover);
-      color: var(--text-white);
-    }
+.user-footer {
+  padding: 20px;
+  border-top: 1px solid var(--bg-sidebar-hover);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
-    .user-footer {
-      padding: 20px;
-      border-top: 1px solid var(--bg-sidebar-hover);
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+.user-email-display {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  word-break: break-all;
+}
 
-    .user-email-display {
-      font-size: 0.8rem;
-      color: #94a3b8;
-      word-break: break-all;
-    }
+main {
+  flex: 1;
+  padding: 32px;
+  overflow-y: auto;
+}
 
-    main {
-      flex: 1;
-      padding: 32px;
-      overflow-y: auto;
-    }
+header {
+  margin-bottom: 24px;
+}
 
-    header {
-      margin-bottom: 24px;
-    }
+header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
 
-    header h1 {
-      font-size: 1.6rem;
-      font-weight: 700;
-    }
+header p {
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-size: 0.95rem;
+}
 
-    header p {
-      color: var(--text-muted);
-      margin-top: 4px;
-      font-size: 0.95rem;
-    }
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
 
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
-    }
+.card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
 
-    .card {
-      background-color: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-    }
+.card-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
 
-    .card-title {
-      font-size: 0.85rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--text-muted);
-    }
+.card-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-top: 8px;
+}
 
-    .card-value {
-      font-size: 1.8rem;
-      font-weight: 700;
-      margin-top: 8px;
-    }
+.filter-panel {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
 
-    .filter-panel {
-      background-color: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 24px;
-    }
+.filter-form {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+}
 
-    .filter-form {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr auto;
-      gap: 12px;
-      align-items: end;
-    }
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
 
-    .form-group label {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--text-muted);
-    }
+.form-group input, .form-group select {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  background-color: #fff;
+}
 
-    .form-group input, .form-group select {
-      padding: 10px 14px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 0.95rem;
-      outline: none;
-      background-color: #fff;
-    }
+.btn-group {
+  display: flex;
+  gap: 8px;
+}
 
-    .btn-group {
-      display: flex;
-      gap: 8px;
-    }
+.btn {
+  padding: 10px 16px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
 
-    .btn {
-      padding: 10px 16px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
+.btn-primary {
+  background-color: var(--primary);
+  color: #fff;
+}
 
-    .btn-primary {
-      background-color: var(--primary);
-      color: #fff;
-    }
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
 
-    .btn-primary:hover {
-      background-color: var(--primary-hover);
-    }
+.btn-secondary {
+  background-color: #fff;
+  color: var(--text-main);
+  border: 1px solid var(--border);
+}
 
-    .btn-secondary {
-      background-color: #fff;
-      color: var(--text-main);
-      border: 1px solid var(--border);
-    }
+.btn-secondary:hover {
+  background-color: #f1f5f9;
+}
 
-    .btn-secondary:hover {
-      background-color: #f1f5f9;
-    }
+.btn-logout {
+  background-color: transparent;
+  color: #f87171;
+  border: 1px solid #7f1d1d;
+  font-size: 0.85rem;
+  padding: 8px;
+  width: 100%;
+}
 
-    .btn-logout {
-      background-color: transparent;
-      color: #f87171;
-      border: 1px solid #7f1d1d;
-      font-size: 0.85rem;
-      padding: 8px;
-      width: 100%;
-    }
+.btn-logout:hover {
+  background-color: #7f1d1d;
+  color: #ffffff;
+}
 
-    .btn-logout:hover {
-      background-color: #7f1d1d;
-      color: #ffffff;
-    }
+.table-panel {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
 
-    .table-panel {
-      background-color: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-    }
+.table-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-    .table-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+.table-title {
+  font-weight: 600;
+}
 
-    .table-title {
-      font-weight: 600;
-    }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-    }
+th, td {
+  padding: 14px 20px;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--border);
+}
 
-    th, td {
-      padding: 14px 20px;
-      font-size: 0.9rem;
-      border-bottom: 1px solid var(--border);
-    }
+th {
+  background-color: #f8fafc;
+  color: var(--text-muted);
+  font-weight: 600;
+}
 
-    th {
-      background-color: #f8fafc;
-      color: var(--text-muted);
-      font-weight: 600;
-    }
+tr:last-child td {
+  border-bottom: none;
+}
 
-    tr:last-child td {
-      border-bottom: none;
-    }
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background-color: var(--badge-bg);
+  color: var(--badge-text);
+}
 
-    .badge {
-      display: inline-block;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      background-color: var(--badge-bg);
-      color: var(--badge-text);
-    }
+.status-msg {
+  padding: 32px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
 
-    .status-msg {
-      padding: 32px;
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 0.95rem;
-    }
+@media (max-width: 860px) {
+  body {
+    flex-direction: column;
+  }
+  aside {
+    width: 100%;
+  }
+  .filter-form {
+    grid-template-columns: 1fr;
+  }
+}
 
-    @media (max-width: 860px) {
-      body {
-        flex-direction: column;
-      }
-      aside {
-        width: 100%;
-      }
-      .filter-form {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
-</head>
-<body>
 
-  <div id="auth-container">
-    <div class="auth-card">
-      <div class="auth-title">CNPJ Finder</div>
-      <div class="auth-subtitle">Inicie sessão para acessar o sistema</div>
-
-      <div class="auth-input-group">
-        <label for="login-email">E-mail</label>
-        <input type="email" id="login-email" placeholder="seu-email@dominio.com" />
-      </div>
-
-      <div class="auth-input-group">
-        <label for="login-password">Senha</label>
-        <input type="password" id="login-password" placeholder="••••••••" />
-      </div>
-
-      <div id="auth-error-msg" class="auth-error"></div>
-
-      <button class="btn btn-primary" onclick="fazerLogin()">Entrar</button>
-    </div>
+  <div class="auth-input-group">
+    <label for="login-email">E-mail</label>
+    <input type="email" id="login-email" placeholder="seu-email@dominio.com" />
   </div>
 
-  <aside>
-    <div>
-      <div class="brand">CNPJ Finder</div>
-      <ul class="nav-list">
-        <li class="nav-item active">Buscar Empresas</li>
-      </ul>
+  <div class="auth-input-group">
+    <label for="login-password">Senha</label>
+    <input type="password" id="login-password" placeholder="••••••••" />
+  </div>
+
+  <div id="auth-error-msg" class="auth-error"></div>
+
+  <button class="btn btn-primary" onclick="fazerLogin()">Entrar</button>
+</div>
+
+
+<div class="metrics-grid">
+  <div class="card">
+    <div class="card-title">Resultados Encontrados</div>
+    <div class="card-value" id="metric-total">0</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Status da Sessão</div>
+    <div class="card-value" id="metric-status" style="font-size: 1.2rem; color: #f59e0b;">Aguardando...</div>
+  </div>
+</div>
+
+<div class="filter-panel">
+  <div class="filter-form">
+    <div class="form-group">
+      <label for="filter-categoria">Ramo de Atividade</label>
+      <select id="filter-categoria">
+        <option value="">Todos os Ramos</option>
+        <option value="Pet shop">Pet shop</option>
+        <option value="Autopeças">Autopeças</option>
+        <option value="Barbearia">Barbearia</option>
+        <option value="Papelaria">Papelaria</option>
+        <option value="Mercado">Mercado</option>
+        <option value="Restaurante">Restaurante</option>
+        <option value="Farmácia">Farmácia</option>
+        <option value="Não identificado">Não identificado</option>
+      </select>
     </div>
-    <div class="user-footer" id="user-footer" style="display: none;">
-      <span class="user-email-display" id="user-email-display"></span>
-      <button class="btn btn-logout" onclick="fazerLogout()">Sair da Conta</button>
+    <div class="form-group">
+      <label for="filter-uf">Estado (UF)</label>
+      <select id="filter-uf">
+        <option value="">Todos</option>
+        <option value="SP">SP</option>
+        <option value="RJ">RJ</option>
+        <option value="MG">MG</option>
+        <option value="PR">PR</option>
+        <option value="BA">BA</option>
+        <option value="RS">RS</option>
+      </select>
     </div>
-  </aside>
-
-  <main>
-    <header>
-      <h1>Extrator e Pesquisa de Empresas</h1>
-      <p>Consulte registros cadastrados por nome, categoria, estado e cidade.</p>
-    </header>
-
-    <div class="metrics-grid">
-      <div class="card">
-        <div class="card-title">Resultados Encontrados</div>
-        <div class="card-value" id="metric-total">0</div>
-      </div>
-      <div class="card">
-        <div class="card-title">Status da Sessão</div>
-        <div class="card-value" id="metric-status" style="font-size: 1.2rem; color: #f59e0b;">Aguardando...</div>
-      </div>
+    <div class="form-group">
+      <label for="filter-termo">Nome ou CNPJ (Opcional)</label>
+      <input type="text" id="filter-termo" placeholder="Digite termo de busca..." />
     </div>
-
-    <div class="filter-panel">
-      <div class="filter-form">
-        <div class="form-group">
-          <label for="filter-term">Termo ou Palavra-chave</label>
-          <input type="text" id="filter-term" placeholder="Ex: mercado, papelaria, silva..." />
-        </div>
-        <div class="form-group">
-          <label for="filter-uf">Estado (UF)</label>
-          <select id="filter-uf">
-            <option value="">Todos</option>
-            <option value="SP">SP</option>
-            <option value="RJ">RJ</option>
-            <option value="MG">MG</option>
-            <option value="PR">PR</option>
-            <option value="BA">BA</option>
-            <option value="RS">RS</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="filter-cidade">Cidade / Município</label>
-          <input type="text" id="filter-cidade" placeholder="Ex: Santo André ou código" />
-        </div>
-        <div class="btn-group">
-          <button class="btn btn-primary" onclick="buscarNoBanco()">Filtrar</button>
-          <button class="btn btn-secondary" onclick="exportarCSV()">Exportar CSV</button>
-        </div>
-      </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="buscarNoBanco()">Filtrar</button>
+      <button class="btn btn-secondary" onclick="exportarCSV()">Exportar CSV</button>
     </div>
+  </div>
+</div>
 
-    <div class="table-panel">
-      <div class="table-header">
-        <div class="table-title">Empresas Cadastradas</div>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Nome Empresarial</th>
-            <th>CNPJ</th>
-            <th>Telefone</th>
-            <th>Cidade</th>
-            <th>UF</th>
-            <th>Categoria</th>
-          </tr>
-        </thead>
-        <tbody id="table-body">
-          <tr>
-            <td colspan="6" class="status-msg">Faça login para visualizar os dados.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </main>
+<div class="table-panel">
+  <div class="table-header">
+    <div class="table-title">Empresas Cadastradas</div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Nome Empresarial</th>
+        <th>CNPJ</th>
+        <th>Telefone</th>
+        <th>Cidade</th>
+        <th>UF</th>
+        <th>Ramo / Categoria</th>
+      </tr>
+    </thead>
+    <tbody id="table-body">
+      <tr>
+        <td colspan="6" class="status-msg">Faça login para visualizar os dados.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
-  <script>
-    const SUPABASE_URL = "https://gcdrnmclxpucpwytjnaz.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjZHJubWNseHB1Y3B3eXRqbmF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwNDg4NTMsImV4cCI6MjEwODYyNDg1M30.K41jz1FB--1ZLPXVpHf2Z9TY8kuRCGNKIT3Iv27tOoY";
-
-    const dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    let dadosExibidos = [];
-
-    async function verificarSessao() {
-      const { data: { session } } = await dbClient.auth.getSession();
-      tratarEstadoSessao(session);
-
-      dbClient.auth.onAuthStateChange((_event, session) => {
-        tratarEstadoSessao(session);
-      });
-    }
-
-    function tratarEstadoSessao(session) {
-      const authContainer = document.getElementById("auth-container");
-      const userFooter = document.getElementById("user-footer");
-      const userEmailDisplay = document.getElementById("user-email-display");
-      const statusEl = document.getElementById("metric-status");
-
-      if (session) {
-        authContainer.style.display = "none";
-        userFooter.style.display = "flex";
-        userEmailDisplay.textContent = session.user.email;
-        statusEl.textContent = "Autenticado";
-        statusEl.style.color = "#10b981";
-        buscarNoBanco();
-      } else {
-        authContainer.style.display = "flex";
-        userFooter.style.display = "none";
-        statusEl.textContent = "Não Autenticado";
-        statusEl.style.color = "#ef4444";
-        dadosExibidos = [];
-        renderizarTabela([]);
-      }
-    }
-
-    async function fazerLogin() {
-      const email = document.getElementById("login-email").value.trim();
-      const password = document.getElementById("login-password").value;
-      const errorMsg = document.getElementById("auth-error-msg");
-
-      errorMsg.style.display = "none";
-
-      const { data, error } = await dbClient.auth.signInWithPassword({
-        email: email,
-        password: password
-      });
-
-      if (error) {
-        errorMsg.textContent = "Erro ao entrar: " + error.message;
-        errorMsg.style.display = "block";
-      }
-    }
-
-    async function fazerLogout() {
-      await dbClient.auth.signOut();
-    }
-
-    // Consulta Direta no Banco (procura nos 10.000 registos)
-    async function buscarNoBanco() {
-      const tbody = document.getElementById("table-body");
-      tbody.innerHTML = `<tr><td colspan="6" class="status-msg">Consultando base de dados...</td></tr>`;
-
-      const termo = document.getElementById("filter-term").value.trim();
-      const uf = document.getElementById("filter-uf").value.trim().toUpperCase();
-      const cidade = document.getElementById("filter-cidade").value.trim();
-
-      try {
-        let query = dbClient
-          .from("empresas")
-          .select("cnpj, nome, telefone, cidade, uf, categoria")
-          .limit(200); // Retorna até 200 resultados mais relevantes da pesquisa
-
-        if (termo) {
-          query = query.or(`nome.ilike.%${termo}%,categoria.ilike.%${termo}%,cnpj.ilike.%${termo}%`);
-        }
-
-        if (uf) {
-          query = query.eq("uf", uf);
-        }
-
-        if (cidade) {
-          query = query.ilike("cidade", `%${cidade}%`);
-        }
-
-        const { data, error } = await query;
-
-        if (error) throw error;
-
-        dadosExibidos = data || [];
-        renderizarTabela(dadosExibidos);
-      } catch (err) {
-        console.error("Erro na leitura:", err);
-        tbody.innerHTML = `<tr><td colspan="6" class="status-msg" style="color: #ef4444;">Erro ao consultar: ${err.message}</td></tr>`;
-      }
-    }
-
-    function renderizarTabela(lista) {
-      const tbody = document.getElementById("table-body");
-      const totalEl = document.getElementById("metric-total");
-
-      totalEl.textContent = lista.length;
-
-      if (lista.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="status-msg">Nenhum resultado encontrado para os filtros pesquisados.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = lista.map(emp => `
-        <tr>
-          <td><strong>${emp.nome || "-"}</strong></td>
-          <td>${emp.cnpj || "-"}</td>
-          <td>${emp.telefone || "-"}</td>
-          <td>${emp.cidade || "-"}</td>
-          <td>${emp.uf || "-"}</td>
-          <td><span class="badge">${emp.categoria || "Geral"}</span></td>
-        </tr>
-      `).join("");
-    }
-
-    function exportarCSV() {
-      if (dadosExibidos.length === 0) {
-        alert("Não há dados para exportar.");
-        return;
-      }
-
-      const cabecalho = ["Nome", "CNPJ", "Telefone", "Cidade", "UF", "Categoria"];
-      const linhas = dadosExibidos.map(emp => [
-        `"${emp.nome || ""}"`,
-        `"${emp.cnpj || ""}"`,
-        `"${emp.telefone || ""}"`,
-        `"${emp.cidade || ""}"`,
-        `"${emp.uf || ""}"`,
-        `"${emp.categoria || ""}"`
-      ]);
-
-      const conteudo = [cabecalho.join(";"), ...linhas.map(l => l.join(";"))].join("\n");
-      const blob = new Blob(["\uFEFF" + conteudo], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "empresas_filtradas.csv";
-      link.click();
-      URL.revokeObjectURL(url);
-    }
-
-    window.addEventListener("DOMContentLoaded", verificarSessao);
-  </script>
-</body>
-</html>
