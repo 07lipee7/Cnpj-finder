@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CNPJ Finder — Extrator de Empresas</title>
-  <!-- Supabase JS Client via CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
@@ -17,6 +16,7 @@
       --text-white: #f8fafc;
       --primary: #2563eb;
       --primary-hover: #1d4ed8;
+      --danger: #ef4444;
       --border: #e2e8f0;
       --badge-bg: #eff6ff;
       --badge-text: #1d4ed8;
@@ -30,10 +30,80 @@
     }
 
     body {
-      display: flex;
       min-height: 100vh;
       background-color: var(--bg-main);
       color: var(--text-main);
+      display: flex;
+    }
+
+    /* Modal / Janela de Login */
+    #auth-container {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 16px;
+    }
+
+    .auth-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 400px;
+      padding: 32px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .auth-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      text-align: center;
+      color: var(--text-main);
+    }
+
+    .auth-subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .auth-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .auth-input-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .auth-input-group input {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .auth-input-group input:focus {
+      border-color: var(--primary);
+    }
+
+    .auth-error {
+      font-size: 0.85rem;
+      color: var(--danger);
+      display: none;
+      text-align: center;
     }
 
     /* Menu Lateral */
@@ -44,6 +114,7 @@
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
+      justify-content: space-between;
     }
 
     .brand {
@@ -74,6 +145,20 @@
       color: var(--text-white);
     }
 
+    .user-footer {
+      padding: 20px;
+      border-top: 1px solid var(--bg-sidebar-hover);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .user-email-display {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      word-break: break-all;
+    }
+
     /* Conteúdo Principal */
     main {
       flex: 1;
@@ -96,7 +181,6 @@
       font-size: 0.95rem;
     }
 
-    /* Cartões de Métricas */
     .metrics-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -125,7 +209,6 @@
       margin-top: 8px;
     }
 
-    /* Barra de Filtros e Busca */
     .filter-panel {
       background-color: var(--bg-card);
       border: 1px solid var(--border);
@@ -162,10 +245,6 @@
       background-color: #fff;
     }
 
-    .form-group input:focus, .form-group select:focus {
-      border-color: var(--primary);
-    }
-
     .btn-group {
       display: flex;
       gap: 8px;
@@ -200,7 +279,20 @@
       background-color: #f1f5f9;
     }
 
-    /* Tabela */
+    .btn-logout {
+      background-color: transparent;
+      color: #f87171;
+      border: 1px solid #7f1d1d;
+      font-size: 0.85rem;
+      padding: 8px;
+      width: 100%;
+    }
+
+    .btn-logout:hover {
+      background-color: #7f1d1d;
+      color: #ffffff;
+    }
+
     .table-panel {
       background-color: var(--bg-card);
       border: 1px solid var(--border);
@@ -269,23 +361,48 @@
       .filter-form {
         grid-template-columns: 1fr;
       }
-      .btn-group {
-        flex-direction: column;
-      }
     }
   </style>
 </head>
 <body>
 
+  <!-- Modal de Login -->
+  <div id="auth-container">
+    <div class="auth-card">
+      <div class="auth-title">CNPJ Finder</div>
+      <div class="auth-subtitle">Inicie sessão para acessar o sistema</div>
+
+      <div class="auth-input-group">
+        <label for="login-email">E-mail</label>
+        <input type="email" id="login-email" placeholder="seu-email@dominio.com" />
+      </div>
+
+      <div class="auth-input-group">
+        <label for="login-password">Senha</label>
+        <input type="password" id="login-password" placeholder="••••••••" />
+      </div>
+
+      <div id="auth-error-msg" class="auth-error"></div>
+
+      <button class="btn btn-primary" onclick="fazerLogin()">Entrar</button>
+    </div>
+  </div>
+
   <!-- Menu Lateral -->
   <aside>
-    <div class="brand">CNPJ Finder</div>
-    <ul class="nav-list">
-      <li class="nav-item active">Buscar Empresas</li>
-    </ul>
+    <div>
+      <div class="brand">CNPJ Finder</div>
+      <ul class="nav-list">
+        <li class="nav-item active">Buscar Empresas</li>
+      </ul>
+    </div>
+    <div class="user-footer" id="user-footer" style="display: none;">
+      <span class="user-email-display" id="user-email-display"></span>
+      <button class="btn btn-logout" onclick="fazerLogout()">Sair da Conta</button>
+    </div>
   </aside>
 
-  <!-- Painel Principal -->
+  <!-- Conteúdo Principal -->
   <main>
     <header>
       <h1>Extrator e Pesquisa de Empresas</h1>
@@ -299,7 +416,7 @@
         <div class="card-value" id="metric-total">0</div>
       </div>
       <div class="card">
-        <div class="card-title">Status da Conexão</div>
+        <div class="card-title">Status da Sessão</div>
         <div class="card-value" id="metric-status" style="font-size: 1.2rem; color: #f59e0b;">Aguardando...</div>
       </div>
     </div>
@@ -309,7 +426,7 @@
       <div class="filter-form">
         <div class="form-group">
           <label for="filter-term">Termo ou Categoria</label>
-          <input type="text" id="filter-term" placeholder="Ex: pet shop, barbearia, auto peças..." />
+          <input type="text" id="filter-term" placeholder="Ex: pet shop, barbearia..." />
         </div>
         <div class="form-group">
           <label for="filter-uf">Estado (UF)</label>
@@ -350,7 +467,7 @@
         </thead>
         <tbody id="table-body">
           <tr>
-            <td colspan="6" class="status-msg">Carregando dados do Supabase...</td>
+            <td colspan="6" class="status-msg">Faça login para visualizar os dados.</td>
           </tr>
         </tbody>
       </table>
@@ -359,52 +476,86 @@
 
   <script>
     // ==========================================
-    // CONFIGURAÇÃO DO BANCO (SUPABASE)
+    // CONFIGURAÇÃO DO SUPABASE
     // ==========================================
-    const SUPABASE_URL = "COLE_SUA_PROJECT_URL_AQUI";
-    const SUPABASE_KEY = "COLE_SUA_CHAVE_PUBLICA_AQUI";
+    const SUPABASE_URL = "https://gcdrnmclxpucpwytjnaz.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjZHJubWNseHB1Y3B3eXRqbmF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwNDg4NTMsImV4cCI6MjEwODYyNDg1M30.K41jz1FB--1ZLPXVpHf2Z9TY8kuRCGNKIT3Iv27tOoY";
 
-    let dbClient = null;
+    const dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let todasAsEmpresas = [];
 
-    // Inicializa a conexão
-    if (SUPABASE_URL !== "COLE_SUA_PROJECT_URL_AQUI" && SUPABASE_KEY !== "COLE_SUA_CHAVE_PUBLICA_AQUI") {
-      dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // Gestão de Sessão
+    async function verificarSessao() {
+      const { data: { session } } = await dbClient.auth.getSession();
+      tratarEstadoSessao(session);
+
+      dbClient.auth.onAuthStateChange((_event, session) => {
+        tratarEstadoSessao(session);
+      });
     }
 
-    async function carregarEmpresas() {
+    function tratarEstadoSessao(session) {
+      const authContainer = document.getElementById("auth-container");
+      const userFooter = document.getElementById("user-footer");
+      const userEmailDisplay = document.getElementById("user-email-display");
       const statusEl = document.getElementById("metric-status");
-      const tbody = document.getElementById("table-body");
 
-      if (!dbClient) {
-        statusEl.textContent = "Chaves ausentes";
+      if (session) {
+        authContainer.style.display = "none";
+        userFooter.style.display = "flex";
+        userEmailDisplay.textContent = session.user.email;
+        statusEl.textContent = "Autenticado";
+        statusEl.style.color = "#10b981";
+        carregarEmpresas();
+      } else {
+        authContainer.style.display = "flex";
+        userFooter.style.display = "none";
+        statusEl.textContent = "Não Autenticado";
         statusEl.style.color = "#ef4444";
-        tbody.innerHTML = `<tr><td colspan="6" class="status-msg" style="color: #ef4444;">Insira sua SUPABASE_URL e SUPABASE_KEY no arquivo index.html para conectar.</td></tr>`;
-        return;
+        todasAsEmpresas = [];
+        renderizarTabela([]);
       }
+    }
 
-      statusEl.textContent = "Conectando...";
-      statusEl.style.color = "#f59e0b";
+    async function fazerLogin() {
+      const email = document.getElementById("login-email").value.trim();
+      const password = document.getElementById("login-password").value;
+      const errorMsg = document.getElementById("auth-error-msg");
+
+      errorMsg.style.display = "none";
+
+      const { data, error } = await dbClient.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
+
+      if (error) {
+        errorMsg.textContent = "Erro ao entrar: " + error.message;
+        errorMsg.style.display = "block";
+      }
+    }
+
+    async function fazerLogout() {
+      await dbClient.auth.signOut();
+    }
+
+    // Consulta e Filtros
+    async function carregarEmpresas() {
+      const tbody = document.getElementById("table-body");
+      tbody.innerHTML = `<tr><td colspan="6" class="status-msg">Carregando dados...</td></tr>`;
 
       try {
         const { data, error } = await dbClient
           .from("empresas")
           .select("cnpj, nome, telefone, cidade, uf, categoria");
 
-        if (error) {
-          throw error;
-        }
+        if (error) throw error;
 
         todasAsEmpresas = data || [];
-        statusEl.textContent = "Conectado";
-        statusEl.style.color = "#10b981";
-
         renderizarTabela(todasAsEmpresas);
       } catch (err) {
-        console.error("Erro na consulta:", err);
-        statusEl.textContent = "Erro na consulta";
-        statusEl.style.color = "#ef4444";
-        tbody.innerHTML = `<tr><td colspan="6" class="status-msg" style="color: #ef4444;">Erro ao carregar dados: ${err.message}. Verifique a política RLS (Passo 1).</td></tr>`;
+        console.error("Erro na leitura:", err);
+        tbody.innerHTML = `<tr><td colspan="6" class="status-msg" style="color: #ef4444;">Erro ao carregar dados: ${err.message}</td></tr>`;
       }
     }
 
@@ -415,7 +566,7 @@
       totalEl.textContent = lista.length;
 
       if (lista.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="status-msg">Nenhuma empresa encontrada com os filtros informados.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="status-msg">Nenhum registro encontrado.</td></tr>`;
         return;
       }
 
@@ -460,7 +611,7 @@
 
     function exportarCSV() {
       if (todasAsEmpresas.length === 0) {
-        alert("Não há dados carregados para exportar.");
+        alert("Não há dados para exportar.");
         return;
       }
 
@@ -484,8 +635,7 @@
       URL.revokeObjectURL(url);
     }
 
-    // Dispara a busca ao carregar a página
-    window.addEventListener("DOMContentLoaded", carregarEmpresas);
+    window.addEventListener("DOMContentLoaded", verificarSessao);
   </script>
 </body>
 </html>
