@@ -36,7 +36,6 @@
       display: flex;
     }
 
-    /* Modal / Janela de Login */
     #auth-container {
       position: fixed;
       inset: 0;
@@ -106,7 +105,6 @@
       text-align: center;
     }
 
-    /* Menu Lateral */
     aside {
       width: 250px;
       background-color: var(--bg-sidebar);
@@ -159,7 +157,6 @@
       word-break: break-all;
     }
 
-    /* Conteúdo Principal */
     main {
       flex: 1;
       padding: 32px;
@@ -366,7 +363,6 @@
 </head>
 <body>
 
-  <!-- Modal de Login -->
   <div id="auth-container">
     <div class="auth-card">
       <div class="auth-title">CNPJ Finder</div>
@@ -388,7 +384,6 @@
     </div>
   </div>
 
-  <!-- Menu Lateral -->
   <aside>
     <div>
       <div class="brand">CNPJ Finder</div>
@@ -402,14 +397,12 @@
     </div>
   </aside>
 
-  <!-- Conteúdo Principal -->
   <main>
     <header>
       <h1>Extrator e Pesquisa de Empresas</h1>
       <p>Consulte registros cadastrados por nome, categoria, estado e cidade.</p>
     </header>
 
-    <!-- Métricas -->
     <div class="metrics-grid">
       <div class="card">
         <div class="card-title">Resultados Encontrados</div>
@@ -421,12 +414,11 @@
       </div>
     </div>
 
-    <!-- Filtros -->
     <div class="filter-panel">
       <div class="filter-form">
         <div class="form-group">
-          <label for="filter-term">Termo ou Categoria</label>
-          <input type="text" id="filter-term" placeholder="Ex: pet shop, barbearia..." />
+          <label for="filter-term">Termo ou Palavra-chave</label>
+          <input type="text" id="filter-term" placeholder="Ex: mercado, papelaria, silva..." />
         </div>
         <div class="form-group">
           <label for="filter-uf">Estado (UF)</label>
@@ -436,20 +428,21 @@
             <option value="RJ">RJ</option>
             <option value="MG">MG</option>
             <option value="PR">PR</option>
+            <option value="BA">BA</option>
+            <option value="RS">RS</option>
           </select>
         </div>
         <div class="form-group">
-          <label for="filter-cidade">Cidade</label>
-          <input type="text" id="filter-cidade" placeholder="Ex: Santo André" />
+          <label for="filter-cidade">Cidade / Município</label>
+          <input type="text" id="filter-cidade" placeholder="Ex: Santo André ou código" />
         </div>
         <div class="btn-group">
-          <button class="btn btn-primary" onclick="aplicarFiltros()">Filtrar</button>
+          <button class="btn btn-primary" onclick="buscarNoBanco()">Filtrar</button>
           <button class="btn btn-secondary" onclick="exportarCSV()">Exportar CSV</button>
         </div>
       </div>
     </div>
 
-    <!-- Tabela de Resultados -->
     <div class="table-panel">
       <div class="table-header">
         <div class="table-title">Empresas Cadastradas</div>
@@ -475,16 +468,12 @@
   </main>
 
   <script>
-    // ==========================================
-    // CONFIGURAÇÃO DO SUPABASE
-    // ==========================================
     const SUPABASE_URL = "https://gcdrnmclxpucpwytjnaz.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjZHJubWNseHB1Y3B3eXRqbmF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwNDg4NTMsImV4cCI6MjEwODYyNDg1M30.K41jz1FB--1ZLPXVpHf2Z9TY8kuRCGNKIT3Iv27tOoY";
 
     const dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    let todasAsEmpresas = [];
+    let dadosExibidos = [];
 
-    // Gestão de Sessão
     async function verificarSessao() {
       const { data: { session } } = await dbClient.auth.getSession();
       tratarEstadoSessao(session);
@@ -506,13 +495,13 @@
         userEmailDisplay.textContent = session.user.email;
         statusEl.textContent = "Autenticado";
         statusEl.style.color = "#10b981";
-        carregarEmpresas();
+        buscarNoBanco();
       } else {
         authContainer.style.display = "flex";
         userFooter.style.display = "none";
         statusEl.textContent = "Não Autenticado";
         statusEl.style.color = "#ef4444";
-        todasAsEmpresas = [];
+        dadosExibidos = [];
         renderizarTabela([]);
       }
     }
@@ -539,23 +528,42 @@
       await dbClient.auth.signOut();
     }
 
-    // Consulta e Filtros
-    async function carregarEmpresas() {
+    // Consulta Direta no Banco (procura nos 10.000 registos)
+    async function buscarNoBanco() {
       const tbody = document.getElementById("table-body");
-      tbody.innerHTML = `<tr><td colspan="6" class="status-msg">Carregando dados...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" class="status-msg">Consultando base de dados...</td></tr>`;
+
+      const termo = document.getElementById("filter-term").value.trim();
+      const uf = document.getElementById("filter-uf").value.trim().toUpperCase();
+      const cidade = document.getElementById("filter-cidade").value.trim();
 
       try {
-        const { data, error } = await dbClient
+        let query = dbClient
           .from("empresas")
-          .select("cnpj, nome, telefone, cidade, uf, categoria");
+          .select("cnpj, nome, telefone, cidade, uf, categoria")
+          .limit(200); // Retorna até 200 resultados mais relevantes da pesquisa
+
+        if (termo) {
+          query = query.or(`nome.ilike.%${termo}%,categoria.ilike.%${termo}%,cnpj.ilike.%${termo}%`);
+        }
+
+        if (uf) {
+          query = query.eq("uf", uf);
+        }
+
+        if (cidade) {
+          query = query.ilike("cidade", `%${cidade}%`);
+        }
+
+        const { data, error } = await query;
 
         if (error) throw error;
 
-        todasAsEmpresas = data || [];
-        renderizarTabela(todasAsEmpresas);
+        dadosExibidos = data || [];
+        renderizarTabela(dadosExibidos);
       } catch (err) {
         console.error("Erro na leitura:", err);
-        tbody.innerHTML = `<tr><td colspan="6" class="status-msg" style="color: #ef4444;">Erro ao carregar dados: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="status-msg" style="color: #ef4444;">Erro ao consultar: ${err.message}</td></tr>`;
       }
     }
 
@@ -566,7 +574,7 @@
       totalEl.textContent = lista.length;
 
       if (lista.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="status-msg">Nenhum registro encontrado.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="status-msg">Nenhum resultado encontrado para os filtros pesquisados.</td></tr>`;
         return;
       }
 
@@ -582,41 +590,14 @@
       `).join("");
     }
 
-    function normalizar(texto) {
-      return (texto || "")
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/\s+/g, "");
-    }
-
-    function aplicarFiltros() {
-      const termo = normalizar(document.getElementById("filter-term").value);
-      const uf = document.getElementById("filter-uf").value.trim().toUpperCase();
-      const cidade = normalizar(document.getElementById("filter-cidade").value);
-
-      const filtrados = todasAsEmpresas.filter(emp => {
-        const matchTermo = !termo ||
-          normalizar(emp.nome).includes(termo) ||
-          normalizar(emp.categoria).includes(termo);
-
-        const matchUf = !uf || (emp.uf || "").toUpperCase() === uf;
-        const matchCidade = !cidade || normalizar(emp.cidade).includes(cidade);
-
-        return matchTermo && matchUf && matchCidade;
-      });
-
-      renderizarTabela(filtrados);
-    }
-
     function exportarCSV() {
-      if (todasAsEmpresas.length === 0) {
+      if (dadosExibidos.length === 0) {
         alert("Não há dados para exportar.");
         return;
       }
 
       const cabecalho = ["Nome", "CNPJ", "Telefone", "Cidade", "UF", "Categoria"];
-      const linhas = todasAsEmpresas.map(emp => [
+      const linhas = dadosExibidos.map(emp => [
         `"${emp.nome || ""}"`,
         `"${emp.cnpj || ""}"`,
         `"${emp.telefone || ""}"`,
@@ -630,7 +611,7 @@
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = "empresas.csv";
+      link.download = "empresas_filtradas.csv";
       link.click();
       URL.revokeObjectURL(url);
     }
