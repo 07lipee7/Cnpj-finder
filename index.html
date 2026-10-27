@@ -91,4 +91,625 @@
       border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 0.95rem;
-      outline
+      outline: none;
+    }
+
+    .auth-input-group input:focus {
+      border-color: var(--primary);
+    }
+
+    .auth-error {
+      font-size: 0.85rem;
+      color: var(--danger);
+      display: none;
+      text-align: center;
+    }
+
+    aside {
+      width: 250px;
+      background-color: var(--bg-sidebar);
+      color: var(--text-white);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      justify-content: space-between;
+    }
+
+    .brand {
+      padding: 24px 20px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      border-bottom: 1px solid var(--bg-sidebar-hover);
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 16px 8px;
+    }
+
+    .nav-item {
+      padding: 12px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #94a3b8;
+      font-weight: 500;
+      margin-bottom: 4px;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .nav-item:hover, .nav-item.active {
+      background-color: var(--bg-sidebar-hover);
+      color: var(--text-white);
+    }
+
+    .user-footer {
+      padding: 20px;
+      border-top: 1px solid var(--bg-sidebar-hover);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .user-email-display {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      word-break: break-all;
+    }
+
+    main {
+      flex: 1;
+      padding: 32px;
+      overflow-y: auto;
+    }
+
+    header {
+      margin-bottom: 24px;
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+
+    header p {
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-size: 0.95rem;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .card-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    .card-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+
+    .filter-panel {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .filter-form {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .form-group input, .form-group select {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      background-color: #fff;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 10px 16px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background-color: #fff;
+      color: var(--text-main);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background-color: #f1f5f9;
+    }
+
+    .btn-logout {
+      background-color: transparent;
+      color: #f87171;
+      border: 1px solid #7f1d1d;
+      font-size: 0.85rem;
+      padding: 8px;
+      width: 100%;
+    }
+
+    .btn-logout:hover {
+      background-color: #7f1d1d;
+      color: #ffffff;
+    }
+
+    .table-panel {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .table-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .table-title {
+      font-weight: 600;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 14px 20px;
+      font-size: 0.9rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background-color: #f8fafc;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background-color: var(--badge-bg);
+      color: var(--badge-text);
+    }
+
+    .status-msg {
+      padding: 32px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 860px) {
+      body {
+        flex-direction: column;
+      }
+      aside {
+        width: 100%;
+      }
+      .filter-form {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="auth-container">
+    <div class="auth-card">
+      <div class="auth-title">CNPJ Finder</div>
+      <div class="auth-subtitle">Inicie sessão para acessar o sistema</div>
+
+      <div class="auth-input-group">
+        <label for="login-email">E-mail</label>
+        <input type="email" id="login-email" placeholder="seu-email@dominio.com" />
+      </div>
+
+      <div class="auth-input-group">
+        <label for="login-password">Senha</label>
+        <input type="password" id="login-password" placeholder="••••••••" />
+      </div>
+
+      <div id="auth-error-msg" class="auth-error"></div>
+
+      <button class="btn btn-primary" onclick="fazerLogin()">Entrar</button>
+    </div>
+  </div>
+
+  <aside>
+    <div>
+      <div class="brand">CNPJ Finder</div>
+      <ul class="nav-list">
+        <li class="nav-item active" id="tab-puxar" onclick="mudarAba('puxar')">Puxar Empresas</li>
+        <li class="nav-item" id="tab-historico" onclick="mudarAba('historico')">Meu Histórico</li>
+      </ul>
+    </div>
+    <div class="user-footer" id="user-footer" style="display: none;">
+      <span class="user-email-display" id="user-email-display"></span>
+      <button class="btn btn-logout" onclick="fazerLogout()">Sair da Conta</button>
+    </div>
+  </aside>
+
+  <main>
+    <header>
+      <h1 id="header-titulo">Extrator e Pesquisa de Empresas</h1>
+      <p id="header-subtitulo">Puxe novas empresas livres por ramo de atividade e estado.</p>
+    </header>
+
+    <div class="metrics-grid">
+      <div class="card">
+        <div class="card-title" id="metric-label">Empresas Exibidas</div>
+        <div class="card-value" id="metric-total">0</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Status da Sessão</div>
+        <div class="card-value" id="metric-status" style="font-size: 1.2rem; color: #f59e0b;">Aguardando...</div>
+      </div>
+    </div>
+
+    <!-- Filtros para Puxar Novos Lotes (300 por vez) -->
+    <div class="filter-panel" id="panel-filtros-puxar">
+      <div class="filter-form">
+        <div class="form-group">
+          <label for="filter-categoria">Ramo de Atividade</label>
+          <select id="filter-categoria">
+            <option value="">Todos os Ramos</option>
+            <option value="Pet shop">Pet shop</option>
+            <option value="Autopeças">Autopeças</option>
+            <option value="Barbearia">Barbearia</option>
+            <option value="Papelaria">Papelaria</option>
+            <option value="Mercado">Mercado</option>
+            <option value="Restaurante">Restaurante</option>
+            <option value="Farmácia">Farmácia</option>
+            <option value="Utilidades domésticas">Utilidades domésticas</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="filter-uf">Estado (UF)</label>
+          <select id="filter-uf">
+            <option value="">Todos</option>
+            <option value="SP">SP</option>
+            <option value="RJ">RJ</option>
+            <option value="MG">MG</option>
+            <option value="PR">PR</option>
+            <option value="BA">BA</option>
+            <option value="RS">RS</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="filter-termo">Nome ou CNPJ (Opcional)</label>
+          <input type="text" id="filter-termo" placeholder="Digite termo de busca..." />
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="puxarNovasEmpresas()">Puxar Lote (300)</button>
+          <button class="btn btn-secondary" onclick="exportarCSV()">Exportar CSV</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros do Histórico -->
+    <div class="filter-panel" id="panel-filtros-historico" style="display: none;">
+      <div class="filter-form">
+        <div class="form-group" style="grid-column: span 3;">
+          <label for="filter-historico-busca">Buscar no Seu Histórico (Nome, Ramo ou CNPJ)</label>
+          <input type="text" id="filter-historico-busca" placeholder="Digite para filtrar seu histórico..." oninput="filtrarHistoricoLocal()" />
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-secondary" onclick="exportarCSV()">Exportar CSV</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-panel">
+      <div class="table-header">
+        <div class="table-title" id="table-titulo">Empresas Reservadas no Lote Atual</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Nome Empresarial</th>
+            <th>CNPJ</th>
+            <th>Telefone</th>
+            <th>Cidade</th>
+            <th>UF</th>
+            <th>Ramo / Categoria</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr>
+            <td colspan="6" class="status-msg">Faça login para puxar empresas livres.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    const SUPABASE_URL = "https://gcdrnmclxpucpwytjnaz.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjZHJubWNseHB1Y3B3eXRqbmF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwNDg4NTMsImV4cCI6MjEwODYyNDg1M30.K41jz1FB--1ZLPXVpHf2Z9TY8kuRCGNKIT3Iv27tOoY";
+
+    const dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let dadosExibidos = [];
+    let historicoCompleto = [];
+    let usuarioAtualId = null;
+    let abaAtual = "puxar";
+
+    async function verificarSessao() {
+      const { data: { session } } = await dbClient.auth.getSession();
+      tratarEstadoSessao(session);
+
+      dbClient.auth.onAuthStateChange((_event, session) => {
+        tratarEstadoSessao(session);
+      });
+    }
+
+    function tratarEstadoSessao(session) {
+      const authContainer = document.getElementById("auth-container");
+      const userFooter = document.getElementById("user-footer");
+      const userEmailDisplay = document.getElementById("user-email-display");
+      const statusEl = document.getElementById("metric-status");
+
+      if (session) {
+        authContainer.style.display = "none";
+        userFooter.style.display = "flex";
+        userEmailDisplay.textContent = session.user.email;
+        statusEl.textContent = "Autenticado";
+        statusEl.style.color = "#10b981";
+        usuarioAtualId = session.user.id;
+      } else {
+        authContainer.style.display = "flex";
+        userFooter.style.display = "none";
+        statusEl.textContent = "Não Autenticado";
+        statusEl.style.color = "#ef4444";
+        usuarioAtualId = null;
+        dadosExibidos = [];
+        historicoCompleto = [];
+        renderizarTabela([]);
+      }
+    }
+
+    async function fazerLogin() {
+      const email = document.getElementById("login-email").value.trim();
+      const password = document.getElementById("login-password").value;
+      const errorMsg = document.getElementById("auth-error-msg");
+
+      errorMsg.style.display = "none";
+
+      const { data, error } = await dbClient.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
+
+      if (error) {
+        errorMsg.textContent = "Erro ao entrar: " + error.message;
+        errorMsg.style.display = "block";
+      }
+    }
+
+    async function fazerLogout() {
+      await dbClient.auth.signOut();
+    }
+
+    function mudarAba(aba) {
+      abaAtual = aba;
+      const tabPuxar = document.getElementById("tab-puxar");
+      const tabHistorico = document.getElementById("tab-historico");
+      const panelPuxar = document.getElementById("panel-filtros-puxar");
+      const panelHistorico = document.getElementById("panel-filtros-historico");
+      const headerTitulo = document.getElementById("header-titulo");
+      const headerSubtitulo = document.getElementById("header-subtitulo");
+      const tableTitulo = document.getElementById("table-titulo");
+
+      if (aba === "puxar") {
+        tabPuxar.classList.add("active");
+        tabHistorico.classList.remove("active");
+        panelPuxar.style.display = "block";
+        panelHistorico.style.display = "none";
+        headerTitulo.textContent = "Extrator e Pesquisa de Empresas";
+        headerSubtitulo.textContent = "Puxe novas empresas livres por ramo de atividade e estado.";
+        tableTitulo.textContent = "Empresas Reservadas no Lote Atual";
+        dadosExibidos = [];
+        renderizarTabela([]);
+      } else {
+        tabHistorico.classList.add("active");
+        tabPuxar.classList.remove("active");
+        panelPuxar.style.display = "none";
+        panelHistorico.style.display = "block";
+        headerTitulo.textContent = "Meu Histórico de Empresas";
+        headerSubtitulo.textContent = "Todas as empresas já extraídas e vinculadas exclusivamente à sua conta.";
+        tableTitulo.textContent = "Seu Acervo de Empresas";
+        carregarHistoricoDoUsuario();
+      }
+    }
+
+    // Puxa e reserva até 300 empresas livres de forma exclusiva
+    async function puxarNovasEmpresas() {
+      const tbody = document.getElementById("table-body");
+      tbody.innerHTML = `<tr><td colspan="6" class="status-msg">Buscando e reservando até 300 empresas livres...</td></tr>`;
+
+      const categoria = document.getElementById("filter-categoria").value || null;
+      const uf = document.getElementById("filter-uf").value || null;
+      const termo = document.getElementById("filter-termo").value.trim() || null;
+
+      try {
+        const { data, error } = await dbClient.rpc("reservar_empresas", {
+          p_categoria: categoria,
+          p_uf: uf,
+          p_termo: termo,
+          p_limite: 300
+        });
+
+        if (error) throw error;
+
+        dadosExibidos = data || [];
+        renderizarTabela(dadosExibidos);
+      } catch (err) {
+        console.error("Erro ao puxar:", err);
+        tbody.innerHTML = `<tr><td colspan="6" class="status-msg" style="color: #ef4444;">Erro ao consultar: ${err.message}</td></tr>`;
+      }
+    }
+
+    // Carrega o histórico de todas as empresas do usuário logado
+    async function carregarHistoricoDoUsuario() {
+      if (!usuarioAtualId) return;
+
+      const tbody = document.getElementById("table-body");
+      tbody.innerHTML = `<tr><td colspan="6" class="status-msg">Carregando seu histórico de empresas...</td></tr>`;
+
+      try {
+        const { data, error } = await dbClient
+          .from("empresas")
+          .select("cnpj, nome, telefone, cidade, uf, categoria")
+          .eq("usuario_id", usuarioAtualId)
+          .order("id", { ascending: false });
+
+        if (error) throw error;
+
+        historicoCompleto = data || [];
+        dadosExibidos = [...historicoCompleto];
+        renderizarTabela(dadosExibidos);
+      } catch (err) {
+        console.error("Erro no histórico:", err);
+        tbody.innerHTML = `<tr><td colspan="6" class="status-msg" style="color: #ef4444;">Erro ao carregar histórico: ${err.message}</td></tr>`;
+      }
+    }
+
+    function filtrarHistoricoLocal() {
+      const termo = document.getElementById("filter-historico-busca").value.toLowerCase().trim();
+      if (!termo) {
+        dadosExibidos = [...historicoCompleto];
+      } else {
+        dadosExibidos = historicoCompleto.filter(emp => 
+          (emp.nome && emp.nome.toLowerCase().includes(termo)) ||
+          (emp.cnpj && emp.cnpj.includes(termo)) ||
+          (emp.categoria && emp.categoria.toLowerCase().includes(termo)) ||
+          (emp.cidade && emp.cidade.toLowerCase().includes(termo))
+        );
+      }
+      renderizarTabela(dadosExibidos);
+    }
+
+    function renderizarTabela(lista) {
+      const tbody = document.getElementById("table-body");
+      const totalEl = document.getElementById("metric-total");
+
+      totalEl.textContent = lista.length;
+
+      if (lista.length === 0) {
+        const msgVazia = abaAtual === "historico" 
+          ? "Você ainda não possui empresas no seu histórico."
+          : "Nenhuma empresa livre encontrada para os filtros selecionados.";
+        tbody.innerHTML = `<tr><td colspan="6" class="status-msg">${msgVazia}</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = lista.map(emp => `
+        <tr>
+          <td><strong>${emp.nome || "-"}</strong></td>
+          <td>${emp.cnpj || "-"}</td>
+          <td>${emp.telefone || "-"}</td>
+          <td>${emp.cidade || "-"}</td>
+          <td>${emp.uf || "-"}</td>
+          <td><span class="badge">${emp.categoria || "Geral"}</span></td>
+        </tr>
+      `).join("");
+    }
+
+    function exportarCSV() {
+      if (dadosExibidos.length === 0) {
+        alert("Não há dados para exportar.");
+        return;
+      }
+
+      const cabecalho = ["Nome", "CNPJ", "Telefone", "Cidade", "UF", "Categoria"];
+      const linhas = dadosExibidos.map(emp => [
+        `"${emp.nome || ""}"`,
+        `"${emp.cnpj || ""}"`,
+        `"${emp.telefone || ""}"`,
+        `"${emp.cidade || ""}"`,
+        `"${emp.uf || ""}"`,
+        `"${emp.categoria || ""}"`
+      ]);
+
+      const conteudo = [cabecalho.join(";"), ...linhas.map(l => l.join(";"))].join("\n");
+      const blob = new Blob(["\uFEFF" + conteudo], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = abaAtual === "historico" ? "meu_historico_empresas.csv" : "empresas_reservadas.csv";
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    window.addEventListener("DOMContentLoaded", verificarSessao);
+  </script>
+</body>
+</html>
