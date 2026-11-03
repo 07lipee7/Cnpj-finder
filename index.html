@@ -16,6 +16,8 @@
       --text-white: #f8fafc;
       --primary: #2563eb;
       --primary-hover: #1d4ed8;
+      --success: #10b981;
+      --success-hover: #059669;
       --danger: #ef4444;
       --danger-hover: #dc2626;
       --border: #e2e8f0;
@@ -269,6 +271,15 @@
       background-color: var(--primary-hover);
     }
 
+    .btn-success {
+      background-color: var(--success);
+      color: #fff;
+    }
+
+    .btn-success:hover {
+      background-color: var(--success-hover);
+    }
+
     .btn-secondary {
       background-color: #fff;
       color: var(--text-main);
@@ -414,7 +425,7 @@
   <main>
     <header>
       <h1 id="header-titulo">Extrator e Pesquisa de Empresas</h1>
-      <p id="header-subtitulo">Puxe novas empresas livres por ramo de atividade, estado e quantidade.</p>
+      <p id="header-subtitulo">Puxe novas empresas livres pesquisando por nome na Receita, estado e quantidade.</p>
     </header>
 
     <div class="metrics-grid">
@@ -428,23 +439,12 @@
       </div>
     </div>
 
-    <!-- Painel de Filtros para Puxar com Seletor de Quantidade -->
+    <!-- Painel de Filtros para Puxar com Pesquisa Livre por Nome -->
     <div class="filter-panel" id="panel-filtros-puxar">
       <div class="filter-form">
         <div class="form-group">
-          <label for="filter-categoria">Ramo de Atividade</label>
-          <select id="filter-categoria">
-            <option value="">Todos os Ramos</option>
-            <option value="Pet shop">Pet shop</option>
-            <option value="Autopeças">Autopeças</option>
-            <option value="Barbearia">Barbearia</option>
-            <option value="Papelaria">Papelaria</option>
-            <option value="Mercado">Mercado</option>
-            <option value="Restaurante">Restaurante</option>
-            <option value="Farmácia">Farmácia</option>
-            <option value="Construção Civil">Construção Civil</option>
-            <option value="Outros">Outros / Sem ramo específico</option>
-          </select>
+          <label for="filter-termo">Pesquisar Nome na Receita</label>
+          <input type="text" id="filter-termo" placeholder="Ex: Papelaria, Mercado..." />
         </div>
         <div class="form-group">
           <label for="filter-uf">Estado (UF)</label>
@@ -468,25 +468,23 @@
             <option value="300">300 empresas</option>
           </select>
         </div>
-        <div class="form-group">
-          <label for="filter-termo">Nome / CNPJ (Opcional)</label>
-          <input type="text" id="filter-termo" placeholder="Digite busca..." />
-        </div>
         <div class="btn-group">
           <button class="btn btn-primary" onclick="puxarNovasEmpresas()">Puxar Lote</button>
+          <button class="btn btn-success" onclick="copiarApenasNumeros()">Copiar Só os Números</button>
           <button class="btn btn-secondary" onclick="exportarCSV()">Exportar CSV</button>
         </div>
       </div>
     </div>
 
-    <!-- Painel de Filtros do Histórico com Botão de Liberar -->
+    <!-- Painel de Filtros do Histórico com Botão de Liberar e Cópia -->
     <div class="filter-panel" id="panel-filtros-historico" style="display: none;">
       <div class="filter-form">
         <div class="form-group" style="grid-column: span 2;">
           <label for="filter-historico-busca">Buscar no Seu Histórico</label>
-          <input type="text" id="filter-historico-busca" placeholder="Filtrar por nome, ramo ou CNPJ..." oninput="filtrarHistoricoLocal()" />
+          <input type="text" id="filter-historico-busca" placeholder="Filtrar por nome ou CNPJ..." oninput="filtrarHistoricoLocal()" />
         </div>
         <div class="btn-group">
+          <button class="btn btn-success" onclick="copiarApenasNumeros()">Copiar Só os Números</button>
           <button class="btn btn-secondary" onclick="exportarCSV()">Exportar CSV</button>
           <button class="btn btn-danger-outline" onclick="liberarHistorico()">Liberar Meu Histórico</button>
         </div>
@@ -599,7 +597,7 @@
         panelPuxar.style.display = "block";
         panelHistorico.style.display = "none";
         headerTitulo.textContent = "Extrator e Pesquisa de Empresas";
-        headerSubtitulo.textContent = "Puxe novas empresas livres por ramo de atividade, estado e quantidade.";
+        headerSubtitulo.textContent = "Puxe novas empresas livres pesquisando por nome na Receita, estado e quantidade.";
         tableTitulo.textContent = "Empresas Reservadas no Lote Atual";
         dadosExibidos = [];
         renderizarTabela([]);
@@ -620,13 +618,12 @@
       const qtd = parseInt(document.getElementById("filter-quantidade").value, 10) || 100;
       tbody.innerHTML = `<tr><td colspan="6" class="status-msg">A puxar e reservar até ${qtd} empresas livres...</td></tr>`;
 
-      const categoria = document.getElementById("filter-categoria").value || null;
-      const uf = document.getElementById("filter-uf").value || null;
       const termo = document.getElementById("filter-termo").value.trim() || null;
+      const uf = document.getElementById("filter-uf").value || null;
 
       try {
         const { data, error } = await dbClient.rpc("reservar_empresas", {
-          p_categoria: categoria,
+          p_categoria: null,
           p_uf: uf,
           p_termo: termo,
           p_limite: qtd
@@ -724,6 +721,30 @@
           <td><span class="badge">${emp.categoria || "Geral"}</span></td>
         </tr>
       `).join("");
+    }
+
+    // Função para copiar apenas os números limpidos direto para a área de transferência
+    function copiarApenasNumeros() {
+      if (dadosExibidos.length === 0) {
+        alert("Não há dados carregados para copiar.");
+        return;
+      }
+
+      const numerosLimpos = dadosExibidos
+        .map(emp => emp.telefone ? emp.telefone.replace(/\D/g, '') : '')
+        .filter(num => num.length >= 10)
+        .join('\n');
+
+      if (!numerosLimpos) {
+        alert("Nenhum número de telefone válido encontrado na lista atual.");
+        return;
+      }
+
+      navigator.clipboard.writeText(numerosLimpos).then(() => {
+        alert(`Sucesso! ${dadosExibidos.length} registos processados. Apenas os números foram copiados para a área de transferência!`);
+      }).catch(err => {
+        alert("Erro ao copiar para a área de transferência: " + err);
+      });
     }
 
     function exportarCSV() {
