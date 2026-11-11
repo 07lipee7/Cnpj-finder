@@ -468,8 +468,8 @@
               <option value="4755-5/01">4755-5/01 — Armarinho e Aviamentos</option>
             </optgroup>
 
-            <optgroup label="📚 Papelaria,Floriculturas e Distribuidoras">
-              <option value="4789-0/02">4789-0/02 — Floricultura e Plantas Naturais</option>
+            <optgroup label="📚 Papelaria, Floriculturas e Distribuidoras">
+              <option value="4789-0/02">4789-0/02 — Comércio Varejista de Plantas e Flores Naturais</option>
               <option value="Papelaria">4761-0/03 — Comércio Varejista de Papelaria</option>
               <option value="4647-8/01">4647-8/01 — Distribuidora / Atacado de Papelaria</option>
               <option value="4761-0/01">4761-0/01 — Livraria</option>
@@ -520,8 +520,8 @@
         </div>
 
         <div class="form-group">
-          <label for="filter-termo">Ou Pesquisar por Nome / CNPJ</label>
-          <input type="text" id="filter-termo" placeholder="Digite qualquer nome na Receita..." />
+          <label for="filter-termo">Ou Pesquisar por Nome / CNPJ / Telefone</label>
+          <input type="text" id="filter-termo" placeholder="Digite nome, CNPJ ou telefone..." />
         </div>
 
         <div class="form-group">
@@ -568,7 +568,7 @@
       <div class="filter-form" style="grid-template-columns: 1fr auto;">
         <div class="form-group">
           <label for="filter-historico-busca">Buscar no Seu Histórico</label>
-          <input type="text" id="filter-historico-busca" placeholder="Filtrar por nome, CNAE ou CNPJ..." oninput="filtrarHistoricoLocal()" />
+          <input type="text" id="filter-historico-busca" placeholder="Filtrar por nome, CNAE, CNPJ ou telefone..." oninput="filtrarHistoricoLocal()" />
         </div>
         <div class="btn-group">
           <button class="btn btn-success" onclick="copiarApenasNumeros()">Copiar Só os Números</button>
@@ -778,6 +778,7 @@
         dadosExibidos = historicoCompleto.filter(emp => 
           (emp.nome && emp.nome.toLowerCase().includes(termo)) ||
           (emp.cnpj && emp.cnpj.includes(termo)) ||
+          (emp.telefone && emp.telefone.toLowerCase().includes(termo)) ||
           (emp.categoria && emp.categoria.toLowerCase().includes(termo)) ||
           (emp.cidade && emp.cidade.toLowerCase().includes(termo))
         );
